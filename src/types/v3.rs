@@ -1,5 +1,7 @@
 use std::ops;
 
+use super::ray::clamp;
+
 pub type Point3 = V3;
 pub type Color = V3;
 
@@ -55,12 +57,22 @@ impl V3 {
         }
     }
 
-    pub fn write_color(&self) {
+    pub fn write_color(&self, samples_per_pixel: u64) {
+        let mut r = self.x();
+        let mut g = self.y();
+        let mut b = self.z();
+
+        let scale = 1.0 / samples_per_pixel as f64;
+
+        r *= scale;
+        g *= scale;
+        b *= scale;
+
         println!(
             "{} {} {}",
-            (self.x() * 255.999) as u16,
-            (self.y() * 255.999) as u16,
-            (self.z() * 255.999) as u16
+            (clamp(r, 0.0, 0.999) * 256.0) as u16,
+            (clamp(g, 0.0, 0.999) * 256.0) as u16,
+            (clamp(b, 0.0, 0.999) * 256.0) as u16
         )
     }
 

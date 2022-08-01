@@ -1,4 +1,5 @@
 use super::v3::{Color, Point3, V3};
+use rand::Rng;
 
 pub struct HitRecord {
     p: Point3,
@@ -75,6 +76,57 @@ impl<T: Hittable> Hittable for HittableList<T> {
         }
 
         hit_anything
+    }
+}
+
+pub fn clamp(x: f64, min: f64, max: f64) -> f64 {
+    if x < min {
+        return min;
+    } else if x > max {
+        return max;
+    } else {
+        x
+    }
+}
+
+pub fn random_float() -> f64 {
+    let mut rng = rand::thread_rng();
+    rng.gen_range(0.0..1.0)
+}
+
+const ASPECT_RATIO: f64 = 16.0 / 9.0;
+const VIEWPORT_HEIGHT: f64 = 2.0;
+const VIEWPORT_WIDTH: f64 = ASPECT_RATIO * VIEWPORT_HEIGHT;
+const FOCAL_LENGTH: f64 = 1.0;
+
+pub struct Camera {
+    origin: Point3,
+    horizontal: V3,
+    vertical: V3,
+    lower_left_corner: Point3,
+}
+
+impl Camera {
+    pub fn new() -> Self {
+        let mut temp = Self {
+            origin: Point3::new([0.0, 0.0, 0.0]),
+            horizontal: V3::new([VIEWPORT_WIDTH, 0.0, 0.0]),
+            vertical: V3::new([0.0, VIEWPORT_HEIGHT, 0.0]),
+            lower_left_corner: Point3::default(),
+        };
+
+        temp.lower_left_corner = &temp.origin
+            - &temp.horizontal / 2.0
+            - &temp.vertical / 2.0
+            - V3::new([0.0, 0.0, FOCAL_LENGTH]);
+        temp
+    }
+
+    pub fn get_ray(&self, u: f64, v: f64) -> Ray {
+        Ray::new(
+            &self.origin,
+            u * &self.horizontal + &self.lower_left_corner + v * &self.vertical - &self.origin,
+        )
     }
 }
 
