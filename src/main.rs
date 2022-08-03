@@ -6,6 +6,7 @@ fn main() {
     const IMAGE_WIDTH: u16 = 400;
     const IMAGE_HEIGHT: u16 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u16;
     const SAMPLES_PER_PIXEL: u64 = 100;
+    const MAX_DEPTH: u32 = 50;
 
     let mut world = HittableList::default();
     world.add(Sphere::new(Point3::new([0.0, 0.0, -1.0]), 0.5));
@@ -23,7 +24,7 @@ fn main() {
                 let u = (i as f64 + random_float()) / (IMAGE_WIDTH - 1) as f64;
                 let v = (j as f64 + random_float()) / (IMAGE_HEIGHT - 1) as f64;
                 let r = camera.get_ray(u, v);
-                pixel_color = pixel_color + r.ray_color(&world);
+                pixel_color = pixel_color + r.ray_color(&world, MAX_DEPTH);
             }
             pixel_color.write_color(SAMPLES_PER_PIXEL);
         }

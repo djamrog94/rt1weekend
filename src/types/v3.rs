@@ -1,3 +1,4 @@
+use super::ray::{random_float, random_float_range};
 use std::ops;
 
 use super::ray::clamp;
@@ -21,6 +22,44 @@ impl Default for V3 {
 impl V3 {
     pub fn new(val: [f64; 3]) -> Self {
         Self { values: val }
+    }
+
+    pub fn random() -> Self {
+        Self {
+            values: [random_float(), random_float(), random_float()],
+        }
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Self {
+        Self {
+            values: [
+                random_float_range(min, max),
+                random_float_range(min, max),
+                random_float_range(min, max),
+            ],
+        }
+    }
+
+    pub fn random_in_unit_sphere() -> V3 {
+        loop {
+            let p = V3::random_range(-1.0, 1.0);
+            if p.length_squared() >= 1.0 {
+                continue;
+            }
+            return p;
+        }
+    }
+
+    pub fn random_unit_vector() -> V3 {
+        V3::random_in_unit_sphere().unit_vector()
+    }
+
+    pub fn random_in_hemisphere(normal: &V3) -> V3 {
+        let us = V3::random_in_unit_sphere();
+        if us.dot(normal) > 0.0 {
+            return us;
+        }
+        -us
     }
 
     pub fn x(&self) -> f64 {
@@ -64,9 +103,9 @@ impl V3 {
 
         let scale = 1.0 / samples_per_pixel as f64;
 
-        r *= scale;
-        g *= scale;
-        b *= scale;
+        r = f64::sqrt(scale * r);
+        g = f64::sqrt(scale * g);
+        b = f64::sqrt(scale * b);
 
         println!(
             "{} {} {}",

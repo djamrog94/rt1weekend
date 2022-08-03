@@ -94,6 +94,11 @@ pub fn random_float() -> f64 {
     rng.gen_range(0.0..1.0)
 }
 
+pub fn random_float_range(min: f64, max: f64) -> f64 {
+    let mut rng = rand::thread_rng();
+    rng.gen_range(min..max)
+}
+
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const VIEWPORT_HEIGHT: f64 = 2.0;
 const VIEWPORT_WIDTH: f64 = ASPECT_RATIO * VIEWPORT_HEIGHT;
@@ -217,10 +222,16 @@ impl Ray {
         temp + &self.origin
     }
 
-    pub fn ray_color(&self, world: &dyn Hittable) -> Color {
+    pub fn ray_color(&self, world: &dyn Hittable, depth: u32) -> Color {
         let mut hit_record = HitRecord::default();
-        if world.hit(&self, 0.0, f64::INFINITY, &mut hit_record) {
-            return hit_record.normal + Color::new([1.0, 1.0, 1.0]) * 0.5;
+
+        if depth <= 0 {
+            return Color::default();
+        }
+        if world.hit(&self, 0.001, f64::INFINITY, &mut hit_record) {
+            let target = &hit_record.p + &V3::random_in_hemisphere(&hit_record.normal);
+            return Ray::new(&hit_record.p, target - &hit_record.p).ray_color(world, depth - 1)
+                * 0.5;
         }
         let unit_direction = self.direction.unit_vector();
         let t = 0.5 * (unit_direction.y() + 1.0);
